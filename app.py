@@ -15,7 +15,7 @@ death = pd.read_csv(
     'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv')
 
 # Find dates
-assert(len(confirmed.columns) == len(death.columns) == len(recovered.columns))
+assert (len(confirmed.columns) == len(death.columns) == len(recovered.columns))
 dates = []
 for d in confirmed.columns:
     try:
@@ -43,14 +43,17 @@ def getCountryTimeData(df, cn):
 # Process data by country - Aggregating states and provinces into country
 newConfirmed = pd.DataFrame()
 confirmed = updateDF(df=confirmed, newDF=newConfirmed, dates=dates)
+print('*\n')
 
 newDeath = pd.DataFrame()
 death = updateDF(df=death, newDF=newDeath, dates=dates)
+print('*\n')
 
 newRecovered = pd.DataFrame()
 recovered = updateDF(df=recovered, newDF=newRecovered, dates=dates)
+print('*\n')
 
-print('Data processing done, bringing up server')
+print('**** Data processing done, bringing up server ****\n\n')
 
 #################
 ### DASHBOARD ###
@@ -69,6 +72,7 @@ bootstrap = [
 
 # Create DASH instance
 app = dash.Dash(__name__, external_stylesheets=bootstrap)
+app.title = 'COVID-19 DASHboard'
 
 ###################
 ### HTML LAYOUT ###
@@ -76,7 +80,8 @@ app = dash.Dash(__name__, external_stylesheets=bootstrap)
 
 app.layout = html.Div([
     html.Div(
-        html.H1('DASHBOARD', style={'fontSize': 72}),
+        [html.H1('COVID-19 DASHBOARD', style={'fontSize': 72}),
+         html.P('Coronavirus disease (COVID-19) is an infectious disease caused by a new virus. The disease causes respiratory illness (like the flu) with symptoms such as a cough, fever, and in more severe cases, difficulty breathing.')],
         className='jumbotron text-center', style={'color': 'white', 'background-color': 'black'}),
 
     html.Div([
@@ -95,6 +100,7 @@ app.layout = html.Div([
         html.Div([dcc.Graph(id='countryGraphDeath')], className='col-sm-4')
     ], className='row')
 ])
+
 
 #######################
 ### CALLBACK CONFIG ###
