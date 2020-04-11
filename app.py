@@ -15,6 +15,7 @@ death = pd.read_csv(
     'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv')
 
 # Find dates
+assert(len(confirmed.columns) == len(death.columns) == len(recovered.columns))
 dates = []
 for d in confirmed.columns:
     try:
@@ -43,6 +44,14 @@ def getCountryTimeData(df, cn):
 newConfirmed = pd.DataFrame()
 confirmed = updateDF(df=confirmed, newDF=newConfirmed, dates=dates)
 
+newDeath = pd.DataFrame()
+death = updateDF(df=death, newDF=newDeath, dates=dates)
+
+newRecovered = pd.DataFrame()
+recovered = updateDF(df=recovered, newDF=newRecovered, dates=dates)
+
+print('Data processing done, bringing up server')
+
 #################
 ### DASHBOARD ###
 #################
@@ -66,23 +75,24 @@ app = dash.Dash(__name__, external_stylesheets=bootstrap)
 ###################
 
 app.layout = html.Div([
-    html.Div(html.H1('DASHBOARD'), className='jumbotron text-center',
-             style={'color': 'white', 'background-color': 'black'}),
+    html.Div(
+        html.H1('DASHBOARD', style={'fontSize': 72}),
+        className='jumbotron text-center', style={'color': 'white', 'background-color': 'black'}),
+
     html.Div([
-        html.Div(className='col-sm-3'),
+        html.Div(className='col-sm-4'),
         html.Div(dcc.Dropdown(options=[{'label': cn, 'value': cn} for cn in confirmed['Country/Region']],
                               id='countryDropdown',
                               value='China'),
-                 className='col-sm-6'),
+                 className='col-sm-4'),
         html.Div([html.Button(id='countryConfirmedButton', n_clicks=0, children='submit', className='center')],
-                 className='col-sm-3')
+                 className='col-sm-4')
     ], className='row'),
 
     html.Div([
-        html.Div(className='col-sm-3'),
-        html.Div([dcc.Graph(id='countryGraph')],
-                 className='col-sm-6'),
-        html.Div(className='col-sm-3')
+        html.Div([dcc.Graph(id='countryGraphConfirm')], className='col-sm-4'),
+        html.Div([dcc.Graph(id='countryGraphRecovered')], className='col-sm-4'),
+        html.Div([dcc.Graph(id='countryGraphDeath')], className='col-sm-4')
     ], className='row')
 ])
 
@@ -91,16 +101,46 @@ app.layout = html.Div([
 #######################
 
 
-@app.callback(dash.dependencies.Output(component_id='countryGraph', component_property='figure'),
+@app.callback(dash.dependencies.Output(component_id='countryGraphConfirm', component_property='figure'),
               [dash.dependencies.Input(component_id='countryConfirmedButton', component_property='n_clicks')],
               [dash.dependencies.State(component_id='countryDropdown', component_property='value')])
 def getChartFigure(n_clicks, input_value):
     countryTimeline = go.Scatter(x=dates,
                                  y=getCountryTimeData(df=confirmed, cn=input_value),
                                  name='Timeline',
-                                 line=dict(color='#f44242'))
+                                 line=dict(color='#f2a600'))
     data = [countryTimeline]
     layout = dict(title='COVID-19 CONFIRMED CASES', showlegend=False)
+
+    fig = dict(data=data, layout=layout)
+    return fig
+
+
+@app.callback(dash.dependencies.Output(component_id='countryGraphDeath', component_property='figure'),
+              [dash.dependencies.Input(component_id='countryConfirmedButton', component_property='n_clicks')],
+              [dash.dependencies.State(component_id='countryDropdown', component_property='value')])
+def getChartFigure(n_clicks, input_value):
+    countryTimeline = go.Scatter(x=dates,
+                                 y=getCountryTimeData(df=death, cn=input_value),
+                                 name='Timeline',
+                                 line=dict(color='#f44242'))
+    data = [countryTimeline]
+    layout = dict(title='COVID-19 DEATHS', showlegend=False)
+
+    fig = dict(data=data, layout=layout)
+    return fig
+
+
+@app.callback(dash.dependencies.Output(component_id='countryGraphRecovered', component_property='figure'),
+              [dash.dependencies.Input(component_id='countryConfirmedButton', component_property='n_clicks')],
+              [dash.dependencies.State(component_id='countryDropdown', component_property='value')])
+def getChartFigure(n_clicks, input_value):
+    countryTimeline = go.Scatter(x=dates,
+                                 y=getCountryTimeData(df=recovered, cn=input_value),
+                                 name='Timeline',
+                                 line=dict(color='#00e30b'))
+    data = [countryTimeline]
+    layout = dict(title='COVID-19 RECOVERED', showlegend=False)
 
     fig = dict(data=data, layout=layout)
     return fig
