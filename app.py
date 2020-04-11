@@ -61,7 +61,10 @@ bootstrap = [
 # Create DASH instance
 app = dash.Dash(__name__, external_stylesheets=bootstrap)
 
-# Dashboard layout
+###################
+### HTML LAYOUT ###
+###################
+
 app.layout = html.Div([
     html.Div(html.H1('DASHBOARD'), className='jumbotron text-center',
              style={'color': 'white', 'background-color': 'black'}),
@@ -82,6 +85,10 @@ app.layout = html.Div([
         html.Div(className='col-sm-3')
     ], className='row')
 ])
+
+#######################
+### CALLBACK CONFIG ###
+#######################
 
 
 @app.callback(dash.dependencies.Output(component_id='countryGraph', component_property='figure'),
